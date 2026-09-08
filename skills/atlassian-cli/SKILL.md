@@ -39,6 +39,25 @@ Use `--profile` / `-p` on any command to override the default profile:
 acli --profile work jira issue list --jql "assignee = currentUser()"
 ```
 
+## Agent mode
+
+Use the persistent `--axi` flag for compact, non-interactive agent output:
+
+```bash
+acli --axi commands
+acli --axi jira issue list
+```
+
+The initial rollout provides bounded product discovery, structured mutation results, and actionable errors for interactive-only commands. Jira is the first implementation target. Confluence and Bitbucket remain part of the command tree and will receive product adapters in later rollout slices.
+
+An explicit JSON request takes precedence when both modes are selected:
+
+```bash
+acli --axi --output json commands
+```
+
+AXI mode never prompts. Run profile setup and profile-default configuration without `--axi` in an interactive terminal.
+
 ## Command Structure
 
 Commands follow a consistent `product → resource → action` pattern:

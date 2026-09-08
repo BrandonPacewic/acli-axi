@@ -33,8 +33,13 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(commandsCmd)
 
-	rootCmd.PersistentFlags().StringP("profile", "p", "", "configuration profile to use (defaults to the default profile)")
-	rootCmd.PersistentFlags().StringP("output", "o", "text", "output format: text or json (json is recommended for programmatic/agent use)")
+	addPersistentFlags(rootCmd)
+}
+
+func addPersistentFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringP("profile", "p", "", "configuration profile to use (defaults to the default profile)")
+	cmd.PersistentFlags().StringP("output", "o", "text", "output format: text or json (json is recommended for programmatic/agent use)")
+	cmd.PersistentFlags().Bool("axi", false, "enable compact, non-interactive agent output")
 }
 
 var versionCmd = &cobra.Command{

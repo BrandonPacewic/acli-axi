@@ -2,6 +2,8 @@ package acli
 
 import (
 	"testing"
+
+	"github.com/spf13/cobra"
 )
 
 func TestRootCommandHasSubcommands(t *testing.T) {
@@ -40,6 +42,40 @@ func TestRootPersistentFlags(t *testing.T) {
 	}
 	if of.DefValue != "text" {
 		t.Errorf("expected default 'text', got %q", of.DefValue)
+	}
+
+	af := flags.Lookup("axi")
+	if af == nil {
+		t.Fatal("expected --axi flag")
+	}
+	if af.Shorthand != "" {
+		t.Errorf("expected --axi to have no shorthand, got %q", af.Shorthand)
+	}
+	if af.DefValue != "false" {
+		t.Errorf("expected --axi to default to false, got %q", af.DefValue)
+	}
+}
+
+func TestAXIFlagParsesBeforeOrAfterSubcommand(t *testing.T) {
+	for _, args := range [][]string{{"--axi", "leaf"}, {"leaf", "--axi"}} {
+		cmd := &cobra.Command{Use: "acli", SilenceUsage: true}
+		addPersistentFlags(cmd)
+		requested := false
+		cmd.AddCommand(&cobra.Command{
+			Use: "leaf",
+			RunE: func(cmd *cobra.Command, args []string) error {
+				requested = isAXIRequested(cmd)
+				return nil
+			},
+		})
+		cmd.SetArgs(args)
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute(%q) error = %v", args, err)
+		}
+		if !requested {
+			t.Fatalf("Execute(%q) did not select AXI mode", args)
+		}
 	}
 }
 

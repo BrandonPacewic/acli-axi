@@ -34,9 +34,9 @@ func TestAddBBPaginationFlags(t *testing.T) {
 func TestGetBBPaginationOpts(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
 	addBBPaginationFlags(cmd)
-	cmd.Flags().Set("page", "3")
-	cmd.Flags().Set("pagelen", "25")
-	cmd.Flags().Set("all", "true")
+	_ = cmd.Flags().Set("page", "3")
+	_ = cmd.Flags().Set("pagelen", "25")
+	_ = cmd.Flags().Set("all", "true")
 
 	opts := getBBPaginationOpts(cmd)
 	if opts.Page != 3 {

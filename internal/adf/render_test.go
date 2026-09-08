@@ -218,7 +218,7 @@ func TestRender(t *testing.T) {
 						},
 					},
 					map[string]interface{}{
-						"type": "heading",
+						"type":  "heading",
 						"attrs": map[string]interface{}{"level": 2},
 						"content": []interface{}{
 							map[string]interface{}{
@@ -308,7 +308,7 @@ func TestRender(t *testing.T) {
 						},
 					},
 					map[string]interface{}{
-						"type": "orderedList",
+						"type":  "orderedList",
 						"attrs": map[string]interface{}{"order": 1},
 						"content": []interface{}{
 							map[string]interface{}{
@@ -338,8 +338,8 @@ func TestRender(t *testing.T) {
 										},
 									},
 									map[string]interface{}{
-										"type":   "mediaSingle",
-										"attrs":  map[string]interface{}{"layout": "align-start"},
+										"type":  "mediaSingle",
+										"attrs": map[string]interface{}{"layout": "align-start"},
 										"content": []interface{}{
 											map[string]interface{}{
 												"type": "media",
@@ -935,7 +935,7 @@ func TestRender(t *testing.T) {
 						},
 					},
 					map[string]interface{}{
-						"type": "mediaSingle",
+						"type":  "mediaSingle",
 						"attrs": map[string]interface{}{"layout": "center"},
 						"content": []interface{}{
 							map[string]interface{}{

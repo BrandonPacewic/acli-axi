@@ -1,6 +1,7 @@
 package acli
 
 import (
+	"github.com/chinmaymk/acli/internal/axi"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -33,10 +34,33 @@ var commandsCmd = &cobra.Command{
 	Long: `Outputs the full command tree as JSON, including all subcommands, flags,
 aliases, and descriptions. Designed for programmatic consumption by LLM coding
 agents and automation scripts that need to discover available operations.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		tree := buildCommandTree(rootCmd)
-		return outputJSON(tree)
-	},
+	RunE: runCommands,
+}
+
+func runCommands(cmd *cobra.Command, _ []string) error {
+	if isAXIOutput(cmd) {
+		return outputAXICommands(cmd)
+	}
+	return outputJSONTo(cmd.OutOrStdout(), buildCommandTree(rootCmd))
+}
+
+func outputAXICommands(cmd *cobra.Command) error {
+	products := []axi.Record{
+		{"name": "jira", "aliases": "j", "status": "foundation", "command": "acli --axi jira", "description": jiraCmd.Short},
+		{"name": "confluence", "aliases": "conf,c", "status": "planned", "command": "acli --axi confluence", "description": confluenceCmd.Short},
+		{"name": "bitbucket", "aliases": "bb", "status": "planned", "command": "acli --axi bitbucket", "description": bitbucketCmd.Short},
+	}
+	return (axi.Encoder{}).EncodeCollection(cmd.OutOrStdout(), axi.Collection{
+		Name:    "products",
+		Count:   len(products),
+		Shown:   len(products),
+		Columns: []string{"name", "aliases", "status", "command", "description"},
+		Records: products,
+		Help: axi.LimitHints(2,
+			"Run `acli --axi jira issue list`",
+			"Run `acli --axi jira search --jql <jql>`",
+		),
+	})
 }
 
 func buildCommandTree(cmd *cobra.Command) CommandInfo {

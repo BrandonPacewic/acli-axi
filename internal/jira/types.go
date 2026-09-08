@@ -2,7 +2,6 @@ package jira
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // Pagination is the common pagination fields in Jira responses.
@@ -350,7 +349,7 @@ func (a *Attachment) UnmarshalJSON(data []byte) error {
 			if json.Unmarshal(raw.ID, &n) == nil {
 				a.ID = n.String()
 			} else {
-				a.ID = fmt.Sprintf("%s", raw.ID)
+				a.ID = string(raw.ID)
 			}
 		}
 	}
@@ -403,11 +402,11 @@ type IssueLinkType struct {
 
 // RemoteIssueLink represents a remote link on an issue.
 type RemoteIssueLink struct {
-	ID           int          `json:"id,omitempty"`
-	Self         string       `json:"self,omitempty"`
-	GlobalID     string       `json:"globalId,omitempty"`
-	Application  *Application `json:"application,omitempty"`
-	Relationship string       `json:"relationship,omitempty"`
+	ID           int           `json:"id,omitempty"`
+	Self         string        `json:"self,omitempty"`
+	GlobalID     string        `json:"globalId,omitempty"`
+	Application  *Application  `json:"application,omitempty"`
+	Relationship string        `json:"relationship,omitempty"`
 	Object       *RemoteObject `json:"object,omitempty"`
 }
 
@@ -435,7 +434,7 @@ type Icon struct {
 
 // RemoteStatus represents a remote status.
 type RemoteStatus struct {
-	Resolved bool `json:"resolved,omitempty"`
+	Resolved bool  `json:"resolved,omitempty"`
 	Icon     *Icon `json:"icon,omitempty"`
 }
 
@@ -467,11 +466,11 @@ type SharePermission struct {
 
 // ProjectRole represents a project role.
 type ProjectRole struct {
-	Self        string        `json:"self,omitempty"`
-	ID          int           `json:"id,omitempty"`
-	Name        string        `json:"name,omitempty"`
-	Description string        `json:"description,omitempty"`
-	Actors      []RoleActor   `json:"actors,omitempty"`
+	Self        string      `json:"self,omitempty"`
+	ID          int         `json:"id,omitempty"`
+	Name        string      `json:"name,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Actors      []RoleActor `json:"actors,omitempty"`
 }
 
 // RoleActor represents an actor in a project role.
@@ -717,8 +716,8 @@ type NotifyRestrict struct {
 
 // Permission represents a permission.
 type Permission struct {
-	ID   string `json:"id,omitempty"`
-	Key  string `json:"key,omitempty"`
+	ID  string `json:"id,omitempty"`
+	Key string `json:"key,omitempty"`
 }
 
 // EntityProperty represents an entity property.
@@ -871,13 +870,13 @@ type AuditRecords struct {
 
 // AuditRecord represents a single audit record.
 type AuditRecord struct {
-	ID            int                   `json:"id,omitempty"`
-	Summary       string                `json:"summary,omitempty"`
-	RemoteAddress string                `json:"remoteAddress,omitempty"`
-	Created       string                `json:"created,omitempty"`
-	Category      string                `json:"category,omitempty"`
-	EventSource   string                `json:"eventSource,omitempty"`
-	Description   string                `json:"description,omitempty"`
+	ID            int    `json:"id,omitempty"`
+	Summary       string `json:"summary,omitempty"`
+	RemoteAddress string `json:"remoteAddress,omitempty"`
+	Created       string `json:"created,omitempty"`
+	Category      string `json:"category,omitempty"`
+	EventSource   string `json:"eventSource,omitempty"`
+	Description   string `json:"description,omitempty"`
 }
 
 // AnnouncementBanner represents the announcement banner settings.
@@ -1019,10 +1018,10 @@ type FieldConfigScheme struct {
 
 // Board represents a Jira Agile board.
 type Board struct {
-	ID       int          `json:"id"`
-	Self     string       `json:"self,omitempty"`
-	Name     string       `json:"name,omitempty"`
-	Type     string       `json:"type,omitempty"`
+	ID       int            `json:"id"`
+	Self     string         `json:"self,omitempty"`
+	Name     string         `json:"name,omitempty"`
+	Type     string         `json:"type,omitempty"`
 	Location *BoardLocation `json:"location,omitempty"`
 }
 
@@ -1047,14 +1046,14 @@ type BoardList struct {
 
 // BoardConfiguration represents a board's configuration.
 type BoardConfiguration struct {
-	ID            int                    `json:"id"`
-	Name          string                 `json:"name,omitempty"`
-	Type          string                 `json:"type,omitempty"`
-	Self          string                 `json:"self,omitempty"`
-	Location      *BoardLocation         `json:"location,omitempty"`
-	Filter        *BoardFilter           `json:"filter,omitempty"`
-	ColumnConfig  *BoardColumnConfig     `json:"columnConfig,omitempty"`
-	Ranking       map[string]interface{} `json:"ranking,omitempty"`
+	ID           int                    `json:"id"`
+	Name         string                 `json:"name,omitempty"`
+	Type         string                 `json:"type,omitempty"`
+	Self         string                 `json:"self,omitempty"`
+	Location     *BoardLocation         `json:"location,omitempty"`
+	Filter       *BoardFilter           `json:"filter,omitempty"`
+	ColumnConfig *BoardColumnConfig     `json:"columnConfig,omitempty"`
+	Ranking      map[string]interface{} `json:"ranking,omitempty"`
 }
 
 // BoardFilter represents the filter associated with a board.
@@ -1065,16 +1064,16 @@ type BoardFilter struct {
 
 // BoardColumnConfig represents board column configuration.
 type BoardColumnConfig struct {
-	Columns    []BoardColumn `json:"columns,omitempty"`
-	ConstraintType string   `json:"constraintType,omitempty"`
+	Columns        []BoardColumn `json:"columns,omitempty"`
+	ConstraintType string        `json:"constraintType,omitempty"`
 }
 
 // BoardColumn represents a single column on a board.
 type BoardColumn struct {
-	Name     string          `json:"name,omitempty"`
-	Statuses []BoardStatus   `json:"statuses,omitempty"`
-	Min      int             `json:"min,omitempty"`
-	Max      int             `json:"max,omitempty"`
+	Name     string        `json:"name,omitempty"`
+	Statuses []BoardStatus `json:"statuses,omitempty"`
+	Min      int           `json:"min,omitempty"`
+	Max      int           `json:"max,omitempty"`
 }
 
 // BoardStatus represents a status in a board column.
@@ -1107,9 +1106,9 @@ type SprintList struct {
 
 // SprintIssuesResponse is the response for issues in a sprint/board.
 type SprintIssuesResponse struct {
-	MaxResults int     `json:"maxResults"`
-	StartAt    int     `json:"startAt"`
-	Total      int     `json:"total"`
+	MaxResults int             `json:"maxResults"`
+	StartAt    int             `json:"startAt"`
+	Total      int             `json:"total"`
 	Issues     []IssueDetailed `json:"issues"`
 }
 

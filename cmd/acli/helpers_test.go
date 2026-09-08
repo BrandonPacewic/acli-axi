@@ -70,7 +70,7 @@ func TestPrintIssueRow(t *testing.T) {
 		},
 	}
 	printIssueRow(w, issue)
-	w.Flush()
+	_ = w.Flush()
 	// If we get here without panic, the nil handling works
 	_ = buf
 }
@@ -88,7 +88,7 @@ func TestPrintIssueRowWithAllFields(t *testing.T) {
 		},
 	}
 	printIssueRow(w, issue)
-	w.Flush()
+	_ = w.Flush()
 }
 
 func TestIssueFieldHeader(t *testing.T) {

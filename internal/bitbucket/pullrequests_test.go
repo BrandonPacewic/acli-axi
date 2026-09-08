@@ -10,7 +10,7 @@ import (
 func TestListPullRequests(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"id": 1, "title": "My PR", "state": "OPEN"}]`),
 		})
 	}))
@@ -35,12 +35,12 @@ func TestListPullRequestsAll(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Next:   "https://api.bitbucket.org/2.0/repositories/ws/repo/pullrequests?page=2",
 				Values: json.RawMessage(`[{"id": 1, "title": "PR 1"}]`),
 			})
 		} else {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Values: json.RawMessage(`[{"id": 2, "title": "PR 2"}]`),
 			})
 		}
@@ -69,7 +69,7 @@ func TestSearchWorkspacePullRequests(t *testing.T) {
 			t.Errorf("unexpected q: %s", q)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"id": 3, "title": "Fix bug", "state": "OPEN"}]`),
 		})
 	}))
@@ -96,13 +96,13 @@ func TestSearchWorkspacePullRequestsAll(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Next:   "https://api.bitbucket.org/2.0/repositories/ws/repo/pullrequests?page=2",
 				Values: json.RawMessage(`[{"id": 1, "title": "PR 1"}]`),
 			})
 			return
 		}
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"id": 2, "title": "PR 2"}]`),
 		})
 	}))
@@ -124,7 +124,7 @@ func TestSearchWorkspacePullRequestsAll(t *testing.T) {
 func TestGetPullRequest(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PullRequest{ID: 42, Title: "Fix bug", State: "OPEN"})
+		_ = json.NewEncoder(w).Encode(PullRequest{ID: 42, Title: "Fix bug", State: "OPEN"})
 	}))
 	defer srv.Close()
 
@@ -147,7 +147,9 @@ func TestCreatePullRequest(t *testing.T) {
 			t.Errorf("expected POST, got %s", r.Method)
 		}
 		var body map[string]interface{}
-		json.NewDecoder(r.Body).Decode(&body)
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode request: %v", err)
+		}
 		if body["title"] != "New feature" {
 			t.Errorf("unexpected title: %v", body["title"])
 		}
@@ -158,7 +160,9 @@ func TestCreatePullRequest(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(PullRequest{ID: 1, Title: "New feature"})
+		if err := json.NewEncoder(w).Encode(PullRequest{ID: 1, Title: "New feature"}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -179,12 +183,16 @@ func TestCreatePullRequest(t *testing.T) {
 func TestCreatePullRequestNoDestination(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]interface{}
-		json.NewDecoder(r.Body).Decode(&body)
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode request: %v", err)
+		}
 		if body["destination"] != nil {
 			t.Error("expected nil destination when not specified")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PullRequest{ID: 2})
+		if err := json.NewEncoder(w).Encode(PullRequest{ID: 2}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -204,7 +212,7 @@ func TestUpdatePullRequest(t *testing.T) {
 			t.Errorf("expected PUT, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PullRequest{ID: 1, Title: "Updated title"})
+		_ = json.NewEncoder(w).Encode(PullRequest{ID: 1, Title: "Updated title"})
 	}))
 	defer srv.Close()
 
@@ -221,7 +229,7 @@ func TestUpdatePullRequest(t *testing.T) {
 func TestApprovePullRequest(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Participant{Approved: true, Role: "REVIEWER"})
+		_ = json.NewEncoder(w).Encode(Participant{Approved: true, Role: "REVIEWER"})
 	}))
 	defer srv.Close()
 
@@ -254,7 +262,7 @@ func TestUnapprovePullRequest(t *testing.T) {
 func TestDeclinePullRequest(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PullRequest{ID: 1, State: "DECLINED"})
+		_ = json.NewEncoder(w).Encode(PullRequest{ID: 1, State: "DECLINED"})
 	}))
 	defer srv.Close()
 
@@ -271,7 +279,7 @@ func TestDeclinePullRequest(t *testing.T) {
 func TestMergePullRequest(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PullRequest{ID: 1, State: "MERGED"})
+		_ = json.NewEncoder(w).Encode(PullRequest{ID: 1, State: "MERGED"})
 	}))
 	defer srv.Close()
 
@@ -288,7 +296,7 @@ func TestMergePullRequest(t *testing.T) {
 func TestMergePullRequestNilRequest(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PullRequest{ID: 1, State: "MERGED"})
+		_ = json.NewEncoder(w).Encode(PullRequest{ID: 1, State: "MERGED"})
 	}))
 	defer srv.Close()
 
@@ -302,7 +310,7 @@ func TestMergePullRequestNilRequest(t *testing.T) {
 func TestRequestChangesPullRequest(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Participant{State: "changes_requested"})
+		_ = json.NewEncoder(w).Encode(Participant{State: "changes_requested"})
 	}))
 	defer srv.Close()
 
@@ -332,7 +340,7 @@ func TestRemoveRequestChanges(t *testing.T) {
 func TestListPRComments(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"id": 100, "content": {"raw": "LGTM"}}]`),
 		})
 	}))
@@ -354,7 +362,7 @@ func TestListPRComments(t *testing.T) {
 func TestCreatePRComment(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PRComment{ID: 101})
+		_ = json.NewEncoder(w).Encode(PRComment{ID: 101})
 	}))
 	defer srv.Close()
 
@@ -371,12 +379,12 @@ func TestCreatePRComment(t *testing.T) {
 func TestCreatePRCommentInline(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]interface{}
-		json.NewDecoder(r.Body).Decode(&body)
+		_ = json.NewDecoder(r.Body).Decode(&body)
 		if _, ok := body["inline"]; !ok {
 			t.Error("expected inline params in body")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PRComment{ID: 102})
+		_ = json.NewEncoder(w).Encode(PRComment{ID: 102})
 	}))
 	defer srv.Close()
 
@@ -407,7 +415,7 @@ func TestCreatePRCommentReply(t *testing.T) {
 			t.Error("reply should not include inline params")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PRComment{ID: 103})
+		_ = json.NewEncoder(w).Encode(PRComment{ID: 103})
 	}))
 	defer srv.Close()
 
@@ -423,7 +431,7 @@ func TestCreatePRCommentReply(t *testing.T) {
 
 func TestGetPRDiff(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("diff --git a/file.go b/file.go"))
+		_, _ = w.Write([]byte("diff --git a/file.go b/file.go"))
 	}))
 	defer srv.Close()
 
@@ -440,7 +448,7 @@ func TestGetPRDiff(t *testing.T) {
 func TestListPRTasks(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"id": 1, "state": "OPEN", "content": {"raw": "Fix tests"}}]`),
 		})
 	}))
@@ -459,7 +467,7 @@ func TestListPRTasks(t *testing.T) {
 func TestCreatePRTask(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PRTask{ID: 10, State: "OPEN"})
+		_ = json.NewEncoder(w).Encode(PRTask{ID: 10, State: "OPEN"})
 	}))
 	defer srv.Close()
 
@@ -476,12 +484,12 @@ func TestCreatePRTask(t *testing.T) {
 func TestCreatePRTaskWithComment(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]interface{}
-		json.NewDecoder(r.Body).Decode(&body)
+		_ = json.NewDecoder(r.Body).Decode(&body)
 		if _, ok := body["comment"]; !ok {
 			t.Error("expected comment in body")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PRTask{ID: 11})
+		_ = json.NewEncoder(w).Encode(PRTask{ID: 11})
 	}))
 	defer srv.Close()
 
@@ -496,7 +504,7 @@ func TestCreatePRTaskWithComment(t *testing.T) {
 func TestUpdatePRTask(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PRTask{ID: 10, State: "RESOLVED"})
+		_ = json.NewEncoder(w).Encode(PRTask{ID: 10, State: "RESOLVED"})
 	}))
 	defer srv.Close()
 
@@ -529,7 +537,7 @@ func TestListPRCommits(t *testing.T) {
 			t.Errorf("expected GET, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"hash": "abc123def456", "message": "Fix bug", "date": "2026-01-01T00:00:00+00:00"}]`),
 		})
 	}))
@@ -557,12 +565,12 @@ func TestListPRCommitsAll(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Next:   "https://api.bitbucket.org/2.0/repositories/ws/repo/pullrequests/1/commits?page=2",
 				Values: json.RawMessage(`[{"hash": "aaa111"}]`),
 			})
 		} else {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Values: json.RawMessage(`[{"hash": "bbb222"}]`),
 			})
 		}
@@ -582,7 +590,7 @@ func TestListPRCommitsAll(t *testing.T) {
 func TestGetPRDiffStat(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"type": "diffstat", "status": "modified", "old": {"type": "commit_file", "path": "main.go"}, "new": {"type": "commit_file", "path": "main.go"}, "lines_added": 10, "lines_removed": 3}]`),
 		})
 	}))
@@ -616,7 +624,7 @@ func TestGetPRDiffStat(t *testing.T) {
 func TestGetPRDiffStatAdded(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"type": "diffstat", "status": "added", "old": null, "new": {"type": "commit_file", "path": "new_file.go"}, "lines_added": 50, "lines_removed": 0}]`),
 		})
 	}))
@@ -644,7 +652,7 @@ func TestGetPRDiffStatAdded(t *testing.T) {
 func TestGetPRDiffStatRenamed(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"type": "diffstat", "status": "renamed", "old": {"type": "commit_file", "path": "old_name.go"}, "new": {"type": "commit_file", "path": "new_name.go"}, "lines_added": 0, "lines_removed": 0}]`),
 		})
 	}))
@@ -672,7 +680,7 @@ func TestGetPRDiffStatRenamed(t *testing.T) {
 func TestListPRActivity(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[
 				{
 					"approval": {

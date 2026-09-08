@@ -68,7 +68,7 @@ func TestBasicAuth(t *testing.T) {
 			t.Errorf("unexpected creds: %s:%s", user, pass)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"ok": "true"})
+		_ = json.NewEncoder(w).Encode(map[string]string{"ok": "true"})
 	}))
 	defer srv.Close()
 
@@ -95,7 +95,7 @@ func TestBearerAuth(t *testing.T) {
 			t.Errorf("expected Bearer auth, got: %s", auth)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"ok": "true"})
+		_ = json.NewEncoder(w).Encode(map[string]string{"ok": "true"})
 	}))
 	defer srv.Close()
 
@@ -118,7 +118,7 @@ func TestGetWithQueryParams(t *testing.T) {
 			t.Errorf("unexpected query: %s", r.URL.RawQuery)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"found": "yes"})
+		_ = json.NewEncoder(w).Encode(map[string]string{"found": "yes"})
 	}))
 	defer srv.Close()
 
@@ -143,13 +143,17 @@ func TestPost(t *testing.T) {
 			t.Error("expected application/json content type")
 		}
 		var body map[string]string
-		json.NewDecoder(r.Body).Decode(&body)
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode request: %v", err)
+		}
 		if body["summary"] != "Test issue" {
 			t.Errorf("unexpected body: %v", body)
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]string{"key": "TEST-1"})
+		if err := json.NewEncoder(w).Encode(map[string]string{"key": "TEST-1"}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -201,7 +205,7 @@ func TestPatch(t *testing.T) {
 			t.Errorf("expected PATCH, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"ok": "true"})
+		_ = json.NewEncoder(w).Encode(map[string]string{"ok": "true"})
 	}))
 	defer srv.Close()
 
@@ -214,7 +218,7 @@ func TestPatch(t *testing.T) {
 
 func TestGetRaw(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("raw content here"))
+		_, _ = w.Write([]byte("raw content here"))
 	}))
 	defer srv.Close()
 
@@ -232,7 +236,7 @@ func TestAPIErrorHandling(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"errorMessages": []string{"Issue Does Not Exist"},
 			"errors":        map[string]string{},
 		})
@@ -292,7 +296,7 @@ func TestAPIErrorString(t *testing.T) {
 func TestGetRawAPIError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte("forbidden"))
+		_, _ = w.Write([]byte("forbidden"))
 	}))
 	defer srv.Close()
 
@@ -312,7 +316,7 @@ func TestDeleteWithBody(t *testing.T) {
 			t.Error("expected application/json content type")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"deleted": "true"})
+		_ = json.NewEncoder(w).Encode(map[string]string{"deleted": "true"})
 	}))
 	defer srv.Close()
 

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/chinmaymk/acli/internal/axi"
 	"github.com/chinmaymk/acli/internal/config"
 	"github.com/spf13/cobra"
 )
@@ -37,6 +38,13 @@ Auth modes:
   - Token only (no email) → Bearer Auth (OAuth 2.0 / scoped tokens)`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := rejectAXIInteraction(
+			cmd,
+			"Profile setup requires an interactive terminal",
+			"Run `acli config setup <profile-name>` without --axi in a terminal",
+		); err != nil {
+			return err
+		}
 		profileName := args[0]
 
 		cfg, err := config.Load()
@@ -93,8 +101,8 @@ Auth modes:
 }
 
 var configListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all configured profiles",
+	Use:     "list",
+	Short:   "List all configured profiles",
 	Aliases: []string{"ls"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, err := config.Load()
@@ -234,6 +242,13 @@ These defaults are used as fallbacks when the flag/argument is not provided:
   - bb_project: Default Bitbucket project key (used by repo create, etc.)`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := rejectAXIInteraction(
+			cmd,
+			"Setting profile defaults requires an interactive terminal",
+			"Run `acli config set-defaults [profile-name]` without --axi in a terminal",
+		); err != nil {
+			return err
+		}
 		cfg, err := config.Load()
 		if err != nil {
 			return fmt.Errorf("loading config: %w", err)
@@ -307,6 +322,19 @@ func promptWithDefault(reader *bufio.Reader, label, current, placeholder string)
 		return placeholder
 	}
 	return input
+}
+
+func rejectAXIInteraction(cmd *cobra.Command, message, fix string) error {
+	if !isAXIRequested(cmd) {
+		return nil
+	}
+	return outputActionableError(cmd, axi.Error{
+		Code:      "interaction_required",
+		Message:   message,
+		Retryable: false,
+		Fix:       fix,
+		Exit:      1,
+	})
 }
 
 func maskToken(token string) string {

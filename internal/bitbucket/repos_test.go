@@ -10,7 +10,7 @@ import (
 func TestListRepositoriesSimple(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Size:    1,
 			Page:    1,
 			PageLen: 50,
@@ -47,7 +47,7 @@ func TestListRepositoriesWithOpts(t *testing.T) {
 			t.Errorf("unexpected sort: %s", r.URL.Query().Get("sort"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"slug": "repo1"}]`),
 		})
 	}))
@@ -74,12 +74,12 @@ func TestListRepositoriesAll(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Next:   "https://api.bitbucket.org/2.0/repositories/ws?page=2&pagelen=50",
 				Values: json.RawMessage(`[{"slug": "repo1"}]`),
 			})
 		} else {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Values: json.RawMessage(`[{"slug": "repo2"}]`),
 			})
 		}
@@ -99,7 +99,7 @@ func TestListRepositoriesAll(t *testing.T) {
 func TestGetRepository(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Repository{
+		_ = json.NewEncoder(w).Encode(Repository{
 			Slug:     "my-repo",
 			FullName: "ws/my-repo",
 			SCM:      "git",
@@ -127,7 +127,7 @@ func TestCreateRepository(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(Repository{Slug: "new-repo", FullName: "ws/new-repo"})
+		_ = json.NewEncoder(w).Encode(Repository{Slug: "new-repo", FullName: "ws/new-repo"})
 	}))
 	defer srv.Close()
 
@@ -148,7 +148,7 @@ func TestCreateRepository(t *testing.T) {
 func TestCreateRepositoryWithSlug(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Repository{Slug: "custom-slug"})
+		_ = json.NewEncoder(w).Encode(Repository{Slug: "custom-slug"})
 	}))
 	defer srv.Close()
 
@@ -188,7 +188,7 @@ func TestForkRepository(t *testing.T) {
 			t.Errorf("expected POST, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Repository{Slug: "forked-repo"})
+		_ = json.NewEncoder(w).Encode(Repository{Slug: "forked-repo"})
 	}))
 	defer srv.Close()
 
@@ -205,7 +205,7 @@ func TestForkRepository(t *testing.T) {
 func TestListForks(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"slug": "fork1"}]`),
 		})
 	}))

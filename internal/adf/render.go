@@ -112,7 +112,7 @@ func renderOrderedList(node map[string]interface{}) string {
 	for i, child := range content {
 		if m, ok := child.(map[string]interface{}); ok {
 			text := strings.TrimRight(renderNode(m), "\n")
-			sb.WriteString(fmt.Sprintf("%d. %s\n", i+1, text))
+			_, _ = fmt.Fprintf(&sb, "%d. %s\n", i+1, text)
 		}
 	}
 	return sb.String()

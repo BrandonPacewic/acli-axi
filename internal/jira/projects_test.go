@@ -19,7 +19,7 @@ func TestGetAllProjects(t *testing.T) {
 			t.Errorf("unexpected recent: %s", r.URL.Query().Get("recent"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode([]Project{
+		_ = json.NewEncoder(w).Encode([]Project{
 			{Key: "PROJ1", Name: "Project 1"},
 			{Key: "PROJ2", Name: "Project 2"},
 		})
@@ -45,7 +45,7 @@ func TestGetAllProjectsNoParams(t *testing.T) {
 			t.Errorf("expected no query params, got: %s", r.URL.RawQuery)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode([]Project{})
+		_ = json.NewEncoder(w).Encode([]Project{})
 	}))
 	defer srv.Close()
 
@@ -63,7 +63,7 @@ func TestCreateProject(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(Project{Key: "NEW", Name: "New Project"})
+		_ = json.NewEncoder(w).Encode(Project{Key: "NEW", Name: "New Project"})
 	}))
 	defer srv.Close()
 
@@ -86,7 +86,7 @@ func TestGetProject(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Project{Key: "PROJ1", Name: "Project 1"})
+		_ = json.NewEncoder(w).Encode(Project{Key: "PROJ1", Name: "Project 1"})
 	}))
 	defer srv.Close()
 
@@ -106,7 +106,7 @@ func TestUpdateProject(t *testing.T) {
 			t.Errorf("expected PUT, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Project{Key: "PROJ1", Name: "Updated"})
+		_ = json.NewEncoder(w).Encode(Project{Key: "PROJ1", Name: "Updated"})
 	}))
 	defer srv.Close()
 
@@ -148,7 +148,7 @@ func TestSearchProjects(t *testing.T) {
 			t.Errorf("unexpected query: %s", r.URL.Query().Get("query"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PageBean[Project]{
+		_ = json.NewEncoder(w).Encode(PageBean[Project]{
 			Pagination: Pagination{Total: 1},
 			Values:     []Project{{Key: "TST", Name: "Test"}},
 		})
@@ -171,7 +171,7 @@ func TestGetRecentProjects(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode([]Project{{Key: "REC"}})
+		_ = json.NewEncoder(w).Encode([]Project{{Key: "REC"}})
 	}))
 	defer srv.Close()
 

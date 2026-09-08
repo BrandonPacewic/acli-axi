@@ -26,7 +26,7 @@ func TestCreateIssue(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(CreatedIssue{ID: "10001", Key: "TEST-1", Self: "https://test.atlassian.net/rest/api/3/issue/10001"})
+		_ = json.NewEncoder(w).Encode(CreatedIssue{ID: "10001", Key: "TEST-1", Self: "https://test.atlassian.net/rest/api/3/issue/10001"})
 	}))
 	defer srv.Close()
 
@@ -56,7 +56,7 @@ func TestGetIssue(t *testing.T) {
 			t.Errorf("unexpected expand: %s", r.URL.Query().Get("expand"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(IssueDetailed{
+		_ = json.NewEncoder(w).Encode(IssueDetailed{
 			Key: "TEST-1",
 			Fields: IssueFields{
 				Summary: "Test issue",
@@ -84,7 +84,7 @@ func TestGetIssueNoFieldsOrExpand(t *testing.T) {
 			t.Errorf("expected no query params, got: %s", r.URL.RawQuery)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(IssueDetailed{Key: "TEST-2"})
+		_ = json.NewEncoder(w).Encode(IssueDetailed{Key: "TEST-2"})
 	}))
 	defer srv.Close()
 
@@ -177,7 +177,9 @@ func TestAssignIssue(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		var body map[string]interface{}
-		json.NewDecoder(r.Body).Decode(&body)
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode request: %v", err)
+		}
 		if body["accountId"] != "user123" {
 			t.Errorf("unexpected accountId: %v", body["accountId"])
 		}
@@ -198,7 +200,7 @@ func TestGetIssueTransitions(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(TransitionsResponse{
+		_ = json.NewEncoder(w).Encode(TransitionsResponse{
 			Transitions: []IssueTransition{
 				{ID: "11", Name: "In Progress"},
 				{ID: "21", Name: "Done"},
@@ -229,7 +231,7 @@ func TestGetIssueComments(t *testing.T) {
 			t.Errorf("unexpected maxResults: %s", r.URL.Query().Get("maxResults"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(CommentPage{})
+		_ = json.NewEncoder(w).Encode(CommentPage{})
 	}))
 	defer srv.Close()
 
@@ -247,7 +249,7 @@ func TestAddIssueComment(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(Comment{ID: "1001"})
+		_ = json.NewEncoder(w).Encode(Comment{ID: "1001"})
 	}))
 	defer srv.Close()
 
@@ -264,12 +266,16 @@ func TestAddIssueComment(t *testing.T) {
 func TestAddIssueCommentWithVisibility(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]interface{}
-		json.NewDecoder(r.Body).Decode(&body)
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode request: %v", err)
+		}
 		if _, ok := body["visibility"]; !ok {
 			t.Error("expected visibility in body")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Comment{ID: "1002"})
+		if err := json.NewEncoder(w).Encode(Comment{ID: "1002"}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -306,7 +312,7 @@ func TestGetIssueVotes(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Votes{Votes: 5, HasVoted: true})
+		_ = json.NewEncoder(w).Encode(Votes{Votes: 5, HasVoted: true})
 	}))
 	defer srv.Close()
 
@@ -338,7 +344,7 @@ func TestAddAndRemoveIssueVote(t *testing.T) {
 func TestGetIssueWatchers(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Watches{WatchCount: 3, IsWatching: true})
+		_ = json.NewEncoder(w).Encode(Watches{WatchCount: 3, IsWatching: true})
 	}))
 	defer srv.Close()
 
@@ -377,7 +383,7 @@ func TestGetIssueWorklogs(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(WorklogPage{})
+		_ = json.NewEncoder(w).Encode(WorklogPage{})
 	}))
 	defer srv.Close()
 
@@ -394,7 +400,7 @@ func TestAddIssueWorklog(t *testing.T) {
 			t.Errorf("expected POST, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Worklog{ID: "500", TimeSpent: "2h"})
+		_ = json.NewEncoder(w).Encode(Worklog{ID: "500", TimeSpent: "2h"})
 	}))
 	defer srv.Close()
 
@@ -427,7 +433,7 @@ func TestDeleteIssueWorklog(t *testing.T) {
 func TestGetIssueRemoteLinks(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode([]RemoteIssueLink{{ID: 1}})
+		_ = json.NewEncoder(w).Encode([]RemoteIssueLink{{ID: 1}})
 	}))
 	defer srv.Close()
 
@@ -444,7 +450,7 @@ func TestGetIssueRemoteLinks(t *testing.T) {
 func TestGetIssueProperties(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"keys": []map[string]string{{"key": "prop1"}, {"key": "prop2"}},
 		})
 	}))
@@ -501,7 +507,7 @@ func TestGetCreateMeta(t *testing.T) {
 			t.Errorf("unexpected projectKeys: %s", r.URL.Query().Get("projectKeys"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(CreateMeta{})
+		_ = json.NewEncoder(w).Encode(CreateMeta{})
 	}))
 	defer srv.Close()
 
@@ -521,7 +527,7 @@ func TestBulkFetchIssues(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(SearchResults{})
+		_ = json.NewEncoder(w).Encode(SearchResults{})
 	}))
 	defer srv.Close()
 
@@ -538,7 +544,7 @@ func TestGetIssueChangelog(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(ChangelogPage{})
+		_ = json.NewEncoder(w).Encode(ChangelogPage{})
 	}))
 	defer srv.Close()
 
@@ -574,7 +580,7 @@ func TestGetIssueEditMeta(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"fields": {"summary": {"type": "string"}}}`))
+		_, _ = w.Write([]byte(`{"fields": {"summary": {"type": "string"}}}`))
 	}))
 	defer srv.Close()
 
@@ -593,7 +599,7 @@ func TestCreateAndDeleteRemoteLink(t *testing.T) {
 		switch r.Method {
 		case "POST":
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(RemoteIssueLink{ID: 42})
+			_ = json.NewEncoder(w).Encode(RemoteIssueLink{ID: 42})
 		case "DELETE":
 			w.WriteHeader(http.StatusNoContent)
 		}
@@ -620,7 +626,7 @@ func TestIssueAPIError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"errorMessages": []string{"Issue does not exist"},
 		})
 	}))

@@ -10,7 +10,7 @@ import (
 func TestListBranches(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"name": "main"}, {"name": "develop"}]`),
 		})
 	}))
@@ -35,7 +35,7 @@ func TestListBranchesWithQuery(t *testing.T) {
 			t.Errorf("unexpected q: %s", r.URL.Query().Get("q"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"name": "feature/login"}]`),
 		})
 	}))
@@ -57,12 +57,12 @@ func TestListBranchesAll(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Next:   "https://api.bitbucket.org/2.0/repositories/ws/repo/refs/branches?page=2",
 				Values: json.RawMessage(`[{"name": "main"}]`),
 			})
 		} else {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Values: json.RawMessage(`[{"name": "develop"}]`),
 			})
 		}
@@ -84,7 +84,7 @@ func TestListBranchesAll(t *testing.T) {
 func TestGetBranch(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Branch{Name: "main"})
+		_ = json.NewEncoder(w).Encode(Branch{Name: "main"})
 	}))
 	defer srv.Close()
 
@@ -104,7 +104,7 @@ func TestCreateBranch(t *testing.T) {
 			t.Errorf("expected POST, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Branch{Name: "feature/new"})
+		_ = json.NewEncoder(w).Encode(Branch{Name: "feature/new"})
 	}))
 	defer srv.Close()
 
@@ -139,7 +139,7 @@ func TestDeleteBranch(t *testing.T) {
 func TestListTags(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"name": "v1.0.0"}, {"name": "v1.1.0"}]`),
 		})
 	}))
@@ -158,7 +158,7 @@ func TestListTags(t *testing.T) {
 func TestGetTag(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Tag{Name: "v1.0.0", Message: "Release 1.0"})
+		_ = json.NewEncoder(w).Encode(Tag{Name: "v1.0.0", Message: "Release 1.0"})
 	}))
 	defer srv.Close()
 
@@ -178,7 +178,7 @@ func TestCreateTag(t *testing.T) {
 			t.Errorf("expected POST, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Tag{Name: "v2.0.0"})
+		_ = json.NewEncoder(w).Encode(Tag{Name: "v2.0.0"})
 	}))
 	defer srv.Close()
 
@@ -216,12 +216,12 @@ func TestListTagsAll(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Next:   "https://api.bitbucket.org/2.0/repositories/ws/repo/refs/tags?page=2",
 				Values: json.RawMessage(`[{"name": "v1.0"}]`),
 			})
 		} else {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Values: json.RawMessage(`[{"name": "v2.0"}]`),
 			})
 		}

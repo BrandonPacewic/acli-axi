@@ -53,7 +53,7 @@ func TestBasicAuthHeader(t *testing.T) {
 			t.Errorf("unexpected creds: %s:%s", user, pass)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"ok": true}`))
+		_, _ = w.Write([]byte(`{"ok": true}`))
 	}))
 	defer srv.Close()
 
@@ -72,7 +72,7 @@ func TestBearerAuthHeader(t *testing.T) {
 			t.Errorf("expected Bearer auth, got: %s", auth)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"ok": true}`))
+		_, _ = w.Write([]byte(`{"ok": true}`))
 	}))
 	defer srv.Close()
 
@@ -90,7 +90,7 @@ func TestDoPost(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"slug": "my-repo"}`))
+		_, _ = w.Write([]byte(`{"slug": "my-repo"}`))
 	}))
 	defer srv.Close()
 
@@ -100,7 +100,9 @@ func TestDoPost(t *testing.T) {
 		t.Fatalf("POST failed: %v", err)
 	}
 	var result map[string]string
-	json.Unmarshal(data, &result)
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
 	if result["slug"] != "my-repo" {
 		t.Errorf("unexpected response: %v", result)
 	}
@@ -112,7 +114,7 @@ func TestDoPut(t *testing.T) {
 			t.Errorf("expected PUT, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"updated": true}`))
+		_, _ = w.Write([]byte(`{"updated": true}`))
 	}))
 	defer srv.Close()
 
@@ -159,7 +161,7 @@ func TestAPIErrorResponse(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(APIError{
+		_ = json.NewEncoder(w).Encode(APIError{
 			Error: struct {
 				Message string `json:"message"`
 			}{Message: "Repository not found"},
@@ -179,7 +181,7 @@ func TestGetRawNoAcceptJSON(t *testing.T) {
 		if r.Header.Get("Accept") == "application/json" {
 			t.Error("getRaw should not set Accept: application/json")
 		}
-		w.Write([]byte("diff --git a/file.go"))
+		_, _ = w.Write([]byte("diff --git a/file.go"))
 	}))
 	defer srv.Close()
 
@@ -196,7 +198,7 @@ func TestGetRawNoAcceptJSON(t *testing.T) {
 func TestGetRawAPIError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte("forbidden"))
+		_, _ = w.Write([]byte("forbidden"))
 	}))
 	defer srv.Close()
 
@@ -276,7 +278,7 @@ func TestGetAllPagination(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Size:    2,
 				Page:    1,
 				PageLen: 1,
@@ -284,7 +286,7 @@ func TestGetAllPagination(t *testing.T) {
 				Values:  json.RawMessage(`[{"id": 1}]`),
 			})
 		} else {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Size:    2,
 				Page:    2,
 				PageLen: 1,

@@ -19,10 +19,12 @@ func TestGetBoards(t *testing.T) {
 			t.Errorf("unexpected type: %s", r.URL.Query().Get("type"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(BoardList{
+		if err := json.NewEncoder(w).Encode(BoardList{
 			Total:  1,
 			Values: []Board{{ID: 1, Name: "Sprint Board"}},
-		})
+		}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -45,7 +47,9 @@ func TestGetBoard(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Board{ID: 42, Name: "My Board"})
+		if err := json.NewEncoder(w).Encode(Board{ID: 42, Name: "My Board"}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -65,7 +69,9 @@ func TestGetBoardConfiguration(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(BoardConfiguration{ID: 42, Name: "Config"})
+		if err := json.NewEncoder(w).Encode(BoardConfiguration{ID: 42, Name: "Config"}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -88,7 +94,7 @@ func TestGetBoardIssues(t *testing.T) {
 			t.Errorf("unexpected jql: %s", r.URL.Query().Get("jql"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(SprintIssuesResponse{
+		_ = json.NewEncoder(w).Encode(SprintIssuesResponse{
 			Total:  1,
 			Issues: []IssueDetailed{{Key: "TEST-1"}},
 		})
@@ -111,7 +117,7 @@ func TestGetBoardBacklog(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(SprintIssuesResponse{})
+		_ = json.NewEncoder(w).Encode(SprintIssuesResponse{})
 	}))
 	defer srv.Close()
 
@@ -131,7 +137,7 @@ func TestGetBoardSprints(t *testing.T) {
 			t.Errorf("unexpected state: %s", r.URL.Query().Get("state"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(SprintList{
+		_ = json.NewEncoder(w).Encode(SprintList{
 			Total:  1,
 			Values: []Sprint{{ID: 10, Name: "Sprint 1", State: "active"}},
 		})
@@ -154,7 +160,7 @@ func TestGetBoardEpics(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(EpicList{})
+		_ = json.NewEncoder(w).Encode(EpicList{})
 	}))
 	defer srv.Close()
 
@@ -171,7 +177,7 @@ func TestGetSprint(t *testing.T) {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Sprint{ID: 10, Name: "Sprint 1", State: "active"})
+		_ = json.NewEncoder(w).Encode(Sprint{ID: 10, Name: "Sprint 1", State: "active"})
 	}))
 	defer srv.Close()
 
@@ -198,14 +204,14 @@ func TestCreateSprint(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(Sprint{ID: 20, Name: "New Sprint"})
+		_ = json.NewEncoder(w).Encode(Sprint{ID: 20, Name: "New Sprint"})
 	}))
 	defer srv.Close()
 
 	c := newTestClient(srv)
 	result, err := c.CreateSprint(map[string]interface{}{
-		"name":            "New Sprint",
-		"originBoardId":   1,
+		"name":          "New Sprint",
+		"originBoardId": 1,
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

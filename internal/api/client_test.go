@@ -45,7 +45,9 @@ func TestConfluenceV2BasicAuth(t *testing.T) {
 			t.Errorf("expected GET, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"ok": "true"})
+		if err := json.NewEncoder(w).Encode(map[string]string{"ok": "true"}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -57,7 +59,9 @@ func TestConfluenceV2BasicAuth(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	var result map[string]string
-	json.Unmarshal(data, &result)
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
 	if result["ok"] != "true" {
 		t.Error("unexpected response")
 	}
@@ -70,7 +74,9 @@ func TestConfluenceV2BearerAuth(t *testing.T) {
 			t.Errorf("expected Bearer auth, got: %s", auth)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"ok": true}`))
+		if _, err := w.Write([]byte(`{"ok": true}`)); err != nil {
+			t.Errorf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -91,7 +97,9 @@ func TestConfluenceV2WithQueryParams(t *testing.T) {
 		if r.URL.Query().Get("status") != "current" {
 			t.Errorf("unexpected status param: %s", r.URL.Query().Get("status"))
 		}
-		w.Write([]byte(`[]`))
+		if _, err := w.Write([]byte(`[]`)); err != nil {
+			t.Errorf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -114,12 +122,16 @@ func TestConfluenceV2WithBody(t *testing.T) {
 			t.Error("expected application/json content type for POST with body")
 		}
 		var body map[string]string
-		json.NewDecoder(r.Body).Decode(&body)
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode request: %v", err)
+		}
 		if body["title"] != "My Page" {
 			t.Errorf("unexpected body: %v", body)
 		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]string{"id": "123"})
+		if err := json.NewEncoder(w).Encode(map[string]string{"id": "123"}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -132,7 +144,9 @@ func TestConfluenceV2WithBody(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	var result map[string]string
-	json.Unmarshal(data, &result)
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
 	if result["id"] != "123" {
 		t.Errorf("unexpected result: %v", result)
 	}
@@ -159,7 +173,9 @@ func TestConfluenceV2NoContentTypeWithoutBody(t *testing.T) {
 func TestConfluenceV2APIError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte("access denied"))
+		if _, err := w.Write([]byte("access denied")); err != nil {
+			t.Errorf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -177,7 +193,9 @@ func TestConfluenceV2PutMethod(t *testing.T) {
 		if r.Method != "PUT" {
 			t.Errorf("expected PUT, got %s", r.Method)
 		}
-		w.Write([]byte(`{"updated": true}`))
+		if _, err := w.Write([]byte(`{"updated": true}`)); err != nil {
+			t.Errorf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -209,7 +227,9 @@ func TestConfluenceV1BasicAuth(t *testing.T) {
 			t.Errorf("expected GET, got %s", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{"results": []interface{}{}, "totalSize": 0})
+		if err := json.NewEncoder(w).Encode(map[string]interface{}{"results": []interface{}{}, "totalSize": 0}); err != nil {
+			t.Errorf("encode response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -228,7 +248,9 @@ func TestConfluenceV1BearerAuth(t *testing.T) {
 		if auth != "Bearer mytoken" {
 			t.Errorf("expected Bearer auth, got: %s", auth)
 		}
-		w.Write([]byte(`{"results":[],"totalSize":0}`))
+		if _, err := w.Write([]byte(`{"results":[],"totalSize":0}`)); err != nil {
+			t.Errorf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -249,7 +271,9 @@ func TestConfluenceV1WithQueryParams(t *testing.T) {
 		if r.URL.Query().Get("limit") != "10" {
 			t.Errorf("unexpected limit: %s", r.URL.Query().Get("limit"))
 		}
-		w.Write([]byte(`{"results":[],"totalSize":0}`))
+		if _, err := w.Write([]byte(`{"results":[],"totalSize":0}`)); err != nil {
+			t.Errorf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -266,7 +290,7 @@ func TestConfluenceV1WithQueryParams(t *testing.T) {
 func TestConfluenceV1APIError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("unauthorized"))
+		_, _ = w.Write([]byte("unauthorized"))
 	}))
 	defer srv.Close()
 

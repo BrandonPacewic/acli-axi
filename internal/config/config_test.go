@@ -11,9 +11,13 @@ func setupTestConfig(t *testing.T) (string, func()) {
 	t.Helper()
 	tmpDir := t.TempDir()
 	origHome := os.Getenv("HOME")
-	os.Setenv("HOME", tmpDir)
+	if err := os.Setenv("HOME", tmpDir); err != nil {
+		t.Fatalf("set temporary HOME: %v", err)
+	}
 	return tmpDir, func() {
-		os.Setenv("HOME", origHome)
+		if err := os.Setenv("HOME", origHome); err != nil {
+			t.Errorf("restore HOME: %v", err)
+		}
 	}
 }
 

@@ -12,7 +12,7 @@ This is ACLI, a Go CLI tool for Atlassian Cloud (Jira, Confluence, Bitbucket). I
 2. Add the cobra command in `cmd/acli/<product>.go`
 3. Follow existing patterns: resource group commands use `RunE: helpRunE`, leaf commands use `Run` with the actual logic
 4. Add short aliases consistent with existing ones
-5. API logic goes in `internal/<product>/` — keep CLI and API concerns separate
+5. API logic goes in `internal/<product>/` - keep CLI and API concerns separate
 
 ### Implementing API calls
 
@@ -22,6 +22,7 @@ This is ACLI, a Go CLI tool for Atlassian Cloud (Jira, Confluence, Bitbucket). I
 
 ### Testing
 
+- Enter the repository toolchain with `nix develop` or run commands directly with `nix develop .# --command <command>`
 - Run `make test` to verify changes
 - Run `make build` to ensure the binary compiles
 - Run `make lint` if golangci-lint is available
@@ -29,5 +30,12 @@ This is ACLI, a Go CLI tool for Atlassian Cloud (Jira, Confluence, Bitbucket). I
 ### Things to watch out for
 
 - Do not commit `.env` or any file containing API tokens
-- The `specs/` JSON files are large (up to 2.4MB) — avoid reading them fully unless needed for a specific endpoint
-- Version variables in `root.go` (`version`, `commit`, `date`) are set via ldflags at build time — do not hardcode values
+- The `specs/` JSON files are large (up to 2.4MB) - avoid reading them fully unless needed for a specific endpoint
+- Version variables in `root.go` (`version`, `commit`, `date`) are set via ldflags at build time - do not hardcode values
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.

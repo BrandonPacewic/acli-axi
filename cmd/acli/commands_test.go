@@ -1,10 +1,65 @@
 package acli
 
 import (
+	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
 )
+
+func TestOutputAXICommandsIsBoundedAndProductNeutral(t *testing.T) {
+	cmd := &cobra.Command{Use: "commands"}
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+
+	if err := outputAXICommands(cmd); err != nil {
+		t.Fatalf("outputAXICommands() error = %v", err)
+	}
+
+	got := output.String()
+	for _, expected := range []string{
+		"count: 3",
+		"products[3]{name,aliases,status,command,description}:",
+		"jira,j",
+		"confluence",
+		"bitbucket,bb",
+		"help[2]:",
+	} {
+		if !strings.Contains(got, expected) {
+			t.Errorf("AXI commands output missing %q:\n%s", expected, got)
+		}
+	}
+}
+
+func TestRunCommandsLegacyAndJSONPrecedence(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		axi  bool
+	}{
+		{name: "legacy"},
+		{name: "json overrides axi", axi: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			cmd := &cobra.Command{Use: "commands"}
+			cmd.Flags().StringP("output", "o", "text", "output format")
+			cmd.Flags().Bool("axi", false, "AXI output")
+			if test.axi {
+				_ = cmd.Flags().Set("axi", "true")
+				_ = cmd.Flags().Set("output", "json")
+			}
+			var output bytes.Buffer
+			cmd.SetOut(&output)
+
+			if err := runCommands(cmd, nil); err != nil {
+				t.Fatalf("runCommands() error = %v", err)
+			}
+			if !strings.HasPrefix(output.String(), "{\n") {
+				t.Fatalf("commands output is not legacy JSON: %s", output.String())
+			}
+		})
+	}
+}
 
 func TestBuildCommandTree(t *testing.T) {
 	tree := buildCommandTree(rootCmd)

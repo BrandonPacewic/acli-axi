@@ -10,7 +10,7 @@ import (
 func TestListWorkspaces(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Size:    2,
 			PageLen: 50,
 			Values:  json.RawMessage(`[{"slug": "ws1", "name": "Workspace 1"}, {"slug": "ws2", "name": "Workspace 2"}]`),
@@ -40,7 +40,7 @@ func TestListWorkspacesWithPagination(t *testing.T) {
 			t.Errorf("expected pagelen=10, got: %s", r.URL.Query().Get("pagelen"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{Values: json.RawMessage(`[]`)})
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{Values: json.RawMessage(`[]`)})
 	}))
 	defer srv.Close()
 
@@ -57,12 +57,12 @@ func TestListWorkspacesAll(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Next:   "https://api.bitbucket.org/2.0/workspaces?page=2&pagelen=50",
 				Values: json.RawMessage(`[{"slug": "ws1"}]`),
 			})
 		} else {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Values: json.RawMessage(`[{"slug": "ws2"}]`),
 			})
 		}
@@ -82,7 +82,7 @@ func TestListWorkspacesAll(t *testing.T) {
 func TestGetWorkspace(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Workspace{Slug: "myws", Name: "My Workspace", UUID: "{uuid-123}"})
+		_ = json.NewEncoder(w).Encode(Workspace{Slug: "myws", Name: "My Workspace", UUID: "{uuid-123}"})
 	}))
 	defer srv.Close()
 
@@ -99,7 +99,7 @@ func TestGetWorkspace(t *testing.T) {
 func TestListWorkspaceMembers(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"user": {"display_name": "John", "account_id": "123"}}]`),
 		})
 	}))
@@ -121,7 +121,7 @@ func TestListWorkspaceMembers(t *testing.T) {
 func TestListWorkspacePermissions(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(PaginatedResponse{
+		_ = json.NewEncoder(w).Encode(PaginatedResponse{
 			Values: json.RawMessage(`[{"permission": "owner", "user": {"display_name": "Admin"}}]`),
 		})
 	}))
@@ -146,12 +146,12 @@ func TestListWorkspaceMembersAll(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount == 1 {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Next:   "https://api.bitbucket.org/2.0/workspaces/ws/members?page=2",
 				Values: json.RawMessage(`[{"user": {"display_name": "A"}}]`),
 			})
 		} else {
-			json.NewEncoder(w).Encode(PaginatedResponse{
+			_ = json.NewEncoder(w).Encode(PaginatedResponse{
 				Values: json.RawMessage(`[{"user": {"display_name": "B"}}]`),
 			})
 		}
